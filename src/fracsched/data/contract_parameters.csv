@@ -1,0 +1,7 @@
+parameter,value,basis
+owners_quarter_share,20,"illustrative assumption: owners holding a 1/4 share (200 hours a year); the most common shares are 1/8 to 1/4 of an aircraft (Wikipedia, Fractional ownership of aircraft)"
+owners_eighth_share,24,"illustrative assumption: owners holding a 1/8 share (100 hours a year)"
+owners_sixteenth_share,32,"illustrative assumption: owners holding a 1/16 share (50 hours a year), the smallest interest a programme may sell in a fixed-wing aircraft (14 CFR 91.1001(b)(10)); 20/4 + 24/8 + 32/16 = 10 aircraft"
+hours_per_aircraft,800,"a whole aircraft is sold as 800 hours a year (Flexjet programme page; 1/16 = 50 hours)"
+borrowing,0.1,"illustrative assumption: an owner may fly up to 10 % beyond the year's allocation by borrowing from next year's; programmes allow borrowing with limits that vary by operator (NBAA, Fractional aircraft ownership FAQ)"
+intensity_cv,0.25,"illustrative assumption: owners differ in how much of their allocation they want to fly; each owner-year draws a Gamma intensity with mean 1 and this coefficient of variation"
