@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Sequence
 from pathlib import Path
@@ -10,6 +11,8 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 # The studies run many tiny array operations; BLAS threads only add contention.
 for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
     os.environ.setdefault(_var, "1")
+
+import numpy as np  # noqa: E402  (after the thread settings, which numpy reads on import)
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "validation" / "results"
@@ -60,3 +63,41 @@ def write_result(
         body.append(f"## {heading}\n\n{text}")
     path.write_text("\n".join(body))
     return path
+
+
+# --------------------------------------------------------------------------- shared inputs
+
+PLANS = RESULTS / "plans"
+PLANS.mkdir(parents=True, exist_ok=True)
+
+IN_SAMPLE_SEED = 20261120  # scenarios a plan is optimised on
+HELD_OUT_SEED = 20261121  # scenarios a plan is judged on, never seen by any optimiser
+
+
+def scenarios(n: int, seed: int, replicate: int = 0) -> np.ndarray:
+    """``n`` utilization paths ``(n, 10, 52)`` from the default (capped) model.
+
+    Replicates of the same seed are independent streams (``SeedSequence.spawn``), so phase 3
+    can draw several independent in-sample sets and phase 5 a held-out set that no
+    optimiser saw.
+    """
+    from fracsched.utilization_model import default_model
+
+    stream = np.random.SeedSequence(seed).spawn(replicate + 1)[replicate]
+    u, _ = default_model().sample(np.random.default_rng(stream), n, 10, 52)
+    return u
+
+
+def save_plan(name: str, schedule: Sequence[Sequence[int]], **info: object) -> None:
+    data = {"schedule": [[int(t) for t in events] for events in schedule], **info}
+    (PLANS / f"{name}.json").write_text(json.dumps(data, indent=1) + "\n")
+
+
+def load_plan(name: str) -> tuple[tuple[int, ...], ...]:
+    data = json.loads((PLANS / f"{name}.json").read_text())
+    return tuple(tuple(events) for events in data["schedule"])
+
+
+def money(x: float) -> str:
+    """Dollars to the nearest thousand, as the tables print them."""
+    return f"{x / 1e6:.3f}M"
