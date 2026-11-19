@@ -10,7 +10,8 @@
 **Code:** [`src/fracsched/dynamic_rescheduling/`](../../src/fracsched/dynamic_rescheduling/) ·
 **Tests:** [`tests/test_rolling.py`](../../tests/test_rolling.py) ·
 **Results:** [`validation/results/rolling.md`](../../validation/results/rolling.md) ·
-**Previous:** [Lesson 4](04-the-exact-answer-for-a-sampled-future.md)
+**Previous:** [Lesson 4](04-the-exact-answer-for-a-sampled-future.md) ·
+**Next:** [Lesson 6](06-who-owns-the-hours.md)
 
 ## Learning objectives
 
