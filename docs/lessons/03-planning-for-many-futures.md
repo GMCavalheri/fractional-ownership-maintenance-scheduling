@@ -12,7 +12,8 @@
 **Tests:** [`tests/test_robust.py`](../../tests/test_robust.py),
 [`tests/test_risk_measures.py`](../../tests/test_risk_measures.py) ·
 **Results:** [`validation/results/robust.md`](../../validation/results/robust.md) ·
-**Previous:** [Lesson 2](02-planning-for-the-average.md)
+**Previous:** [Lesson 2](02-planning-for-the-average.md) ·
+**Next:** [Lesson 4](04-the-exact-answer-for-a-sampled-future.md)
 
 ## Learning objectives
 
