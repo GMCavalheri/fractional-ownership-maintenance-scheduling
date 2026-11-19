@@ -141,3 +141,80 @@ def replans(
     )
     bottom.set_xlabel("week")
     return fig
+
+
+def gantt_scenarios(
+    labels: Sequence[str],
+    planned: Sequence[Sequence[int]],
+    forced: Mapping[str, Sequence[Sequence[int]]],
+    horizon: int,
+) -> Figure:
+    """One panel per future: planned tasks (bars, identical in every panel) and that future's
+    forced tasks (crosses), one row per component."""
+    n = len(forced)
+    fig = Figure(figsize=(9, 2.2 + 0.11 * len(labels) * n), layout="constrained")
+    axes = fig.subplots(n, 1, sharex=True)
+    axes = np.atleast_1d(axes)
+    rows = np.arange(len(labels))
+    for ax, (title, weeks) in zip(axes, forced.items(), strict=True):
+        for r, events in zip(rows, planned, strict=True):
+            ax.scatter(events, [r] * len(events), marker="|", s=40, color=COLORS[0])
+        for r, events in zip(rows, weeks, strict=True):
+            ax.scatter(events, [r] * len(events), marker="x", s=22, color=COLORS[1])
+        ax.set_yticks(rows[::4], [labels[i] for i in rows[::4]], fontsize=6)
+        ax.set_title(title, fontsize=9, loc="left")
+        ax.set_xlim(-1, horizon)
+        ax.invert_yaxis()
+    axes[-1].set_xlabel("week (bars: planned tasks; crosses: tasks forced in this future)")
+    return fig
+
+
+def gantt_html(
+    labels: Sequence[str],
+    planned: Sequence[Sequence[int]],
+    forced: Mapping[str, Sequence[Sequence[int]]],
+) -> str:
+    """The same chart as ``gantt_scenarios``, interactive (Plotly, library from its CDN)."""
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+
+    fig = make_subplots(
+        rows=len(forced),
+        cols=1,
+        shared_xaxes=True,
+        subplot_titles=list(forced),
+        vertical_spacing=0.05,
+    )
+    for i, weeks in enumerate(forced.values(), start=1):
+        xs = [t for events in planned for t in events]
+        ys = [labels[r] for r, events in enumerate(planned) for _ in events]
+        fig.add_trace(
+            go.Scatter(
+                x=xs,
+                y=ys,
+                mode="markers",
+                marker={"symbol": "line-ns-open", "size": 10},
+                name="planned",
+                showlegend=i == 1,
+                marker_color=COLORS[0],
+            ),
+            row=i,
+            col=1,
+        )
+        xs = [t for events in weeks for t in events]
+        ys = [labels[r] for r, events in enumerate(weeks) for _ in events]
+        fig.add_trace(
+            go.Scatter(
+                x=xs,
+                y=ys,
+                mode="markers",
+                marker={"symbol": "x", "size": 8},
+                name="forced",
+                showlegend=i == 1,
+                marker_color=COLORS[1],
+            ),
+            row=i,
+            col=1,
+        )
+    fig.update_layout(height=320 * len(forced), template="plotly_white")
+    return str(fig.to_html(include_plotlyjs="cdn", full_html=True))
