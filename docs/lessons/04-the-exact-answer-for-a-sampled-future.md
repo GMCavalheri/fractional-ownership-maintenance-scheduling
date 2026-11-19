@@ -11,7 +11,8 @@
 **Tests:** [`tests/test_exact_saa.py`](../../tests/test_exact_saa.py) ·
 **Results:** [`validation/results/exact.md`](../../validation/results/exact.md),
 [`exact_main.md`](../../validation/results/exact_main.md) ·
-**Previous:** [Lesson 3](03-planning-for-many-futures.md)
+**Previous:** [Lesson 3](03-planning-for-many-futures.md) ·
+**Next:** [Lesson 5](05-re-planning-as-the-hours-come-in.md)
 
 ## Learning objectives
 
