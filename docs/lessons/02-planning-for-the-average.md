@@ -12,7 +12,8 @@
 [`deterministic_baseline/`](../../src/fracsched/deterministic_baseline/) ·
 **Tests:** [`tests/test_scenarios.py`](../../tests/test_scenarios.py) ·
 **Results:** [`validation/results/deterministic.md`](../../validation/results/deterministic.md) ·
-**Previous:** [Lesson 1](01-flying-hours-you-cant-predict.md)
+**Previous:** [Lesson 1](01-flying-hours-you-cant-predict.md) ·
+**Next:** [Lesson 3](03-planning-for-many-futures.md)
 
 ## Learning objectives
 
