@@ -1,0 +1,5 @@
+component,prior_mean,prior_cv,history_years,basis
+APU,1.0,0.5,2,"illustrative assumption: a related large fleet's experience says this unit wears like the reference (AVR-04's Weibull scale), give or take 50 %; two years of this fleet's own history"
+Landing gear,0.8,0.5,2,"illustrative assumption: the large fleet's gear lasts longer (multiplier 0.8, an optimistic prior for this fleet's shorter sectors); two years of history"
+Hydraulic pump,1.3,0.5,2,"illustrative assumption: the large fleet's pumps wear faster (multiplier 1.3, a pessimistic prior); two years of history"
+Brakes,1.0,0.5,2,"illustrative assumption: the large fleet agrees with the reference; two years of history"
