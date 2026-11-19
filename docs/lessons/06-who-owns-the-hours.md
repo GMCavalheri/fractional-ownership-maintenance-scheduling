@@ -10,7 +10,8 @@
 **Code:** [`src/fracsched/contracts/`](../../src/fracsched/contracts/) ·
 **Tests:** [`tests/test_contracts.py`](../../tests/test_contracts.py) ·
 **Results:** [`validation/results/contracts.md`](../../validation/results/contracts.md) ·
-**Previous:** [Lesson 5](05-re-planning-as-the-hours-come-in.md)
+**Previous:** [Lesson 5](05-re-planning-as-the-hours-come-in.md) ·
+**Next:** [Lesson 7](07-uncertain-wear-on-top-of-uncertain-hours.md)
 
 ## Learning objectives
 
