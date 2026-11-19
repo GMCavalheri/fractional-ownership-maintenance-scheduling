@@ -11,7 +11,8 @@
 **Code:** [`src/fracsched/bayesian_risk/`](../../src/fracsched/bayesian_risk/) ·
 **Tests:** [`tests/test_bayesian_risk.py`](../../tests/test_bayesian_risk.py) ·
 **Results:** [`validation/results/bayesian.md`](../../validation/results/bayesian.md) ·
-**Previous:** [Lesson 6](06-who-owns-the-hours.md)
+**Previous:** [Lesson 6](06-who-owns-the-hours.md) ·
+**Next:** [Lesson 8](08-the-price-of-planning-for-the-average.md)
 
 ## Learning objectives
 
