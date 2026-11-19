@@ -10,7 +10,8 @@
 
 **Code:** [`src/fracsched/utilization_model/`](../../src/fracsched/utilization_model/) ·
 **Tests:** [`tests/test_utilization_model.py`](../../tests/test_utilization_model.py) ·
-**Results:** [`validation/results/utilization.md`](../../validation/results/utilization.md)
+**Results:** [`validation/results/utilization.md`](../../validation/results/utilization.md) ·
+**Next:** [Lesson 2](02-planning-for-the-average.md)
 
 ## Learning objectives
 
