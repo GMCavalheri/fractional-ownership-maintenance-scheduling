@@ -144,27 +144,32 @@ def replans(
 
 
 def gantt_scenarios(
-    labels: Sequence[str],
+    groups: Sequence[str],
     planned: Sequence[Sequence[int]],
     forced: Mapping[str, Sequence[Sequence[int]]],
     horizon: int,
 ) -> Figure:
     """One panel per future: planned tasks (bars, identical in every panel) and that future's
-    forced tasks (crosses), one row per component."""
+    forced tasks (crosses), one row per component; ``groups[r]`` names row ``r``'s aircraft."""
     n = len(forced)
-    fig = Figure(figsize=(9, 2.2 + 0.11 * len(labels) * n), layout="constrained")
-    axes = fig.subplots(n, 1, sharex=True)
-    axes = np.atleast_1d(axes)
-    rows = np.arange(len(labels))
+    fig = Figure(figsize=(9, 1.0 + 0.055 * len(groups) * n), layout="constrained")
+    axes = np.atleast_1d(fig.subplots(n, 1, sharex=True))
+    rows = np.arange(len(groups))
+    names = list(dict.fromkeys(groups))
+    idx = range(len(groups))
+    centres = [float(np.mean([r for r in idx if groups[r] == g])) for g in names]
+    edges = [r - 0.5 for r in idx[1:] if groups[r] != groups[r - 1]]
     for ax, (title, weeks) in zip(axes, forced.items(), strict=True):
         for r, events in zip(rows, planned, strict=True):
-            ax.scatter(events, [r] * len(events), marker="|", s=40, color=COLORS[0])
+            ax.scatter(events, [r] * len(events), marker="|", s=30, color=COLORS[0])
         for r, events in zip(rows, weeks, strict=True):
-            ax.scatter(events, [r] * len(events), marker="x", s=22, color=COLORS[1])
-        ax.set_yticks(rows[::4], [labels[i] for i in rows[::4]], fontsize=6)
+            ax.scatter(events, [r] * len(events), marker="x", s=20, color=COLORS[1])
+        for e in edges:
+            ax.axhline(e, color="0.85", lw=0.6)
+        ax.set_yticks(centres, names, fontsize=6)
         ax.set_title(title, fontsize=9, loc="left")
         ax.set_xlim(-1, horizon)
-        ax.invert_yaxis()
+        ax.set_ylim(len(groups) - 0.5, -0.5)
     axes[-1].set_xlabel("week (bars: planned tasks; crosses: tasks forced in this future)")
     return fig
 
