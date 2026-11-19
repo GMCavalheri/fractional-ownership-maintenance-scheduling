@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import csv
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from importlib import resources
 
@@ -94,7 +95,56 @@ class FleetProblem:
                     max_interval=min(ct.max_interval, weeks),
                 )
             )
-        return replace(self.base, name=f"{self.base.name}-at-mean", types=tuple(types))
+        # The week-clock planner sees each component's FH age as ``h / ū`` weeks.
+        components = tuple(
+            replace(
+                comp,
+                initial_age=min(
+                    round(self.initial_fh[c] / self.mean_fh), types[comp.type].max_interval
+                ),
+            )
+            for c, comp in enumerate(self.base.components)
+        )
+        return replace(
+            self.base,
+            name=f"{self.base.name}-at-mean",
+            types=tuple(types),
+            components=components,
+        )
+
+    def subproblem(
+        self,
+        start: int,
+        weeks_since_task: Sequence[int],
+        fh_since_task: Sequence[float],
+        parts_used: Sequence[int],
+    ) -> FleetProblem:
+        """The problem that remains at the start of week ``start``.
+
+        Its week 0 is week ``start`` here. Each component starts from its observed state:
+        ``weeks_since_task`` (calendar age) and ``fh_since_task``. Capacities are the remaining
+        weeks'; spare parts on hand are the initial stock plus deliveries before ``start`` minus
+        ``parts_used`` (per type) by tasks already done.
+        """
+        inst = self.base
+        if not 0 < start < inst.horizon:
+            raise ValueError("start must be inside the horizon")
+        components = tuple(
+            replace(comp, initial_age=int(w))
+            for comp, w in zip(inst.components, weeks_since_task, strict=True)
+        )
+        stock = inst.initial_stock + inst.deliveries[:, :start].sum(axis=1) - np.asarray(parts_used)
+        base = replace(
+            inst,
+            name=f"{inst.name}-from{start}",
+            horizon=inst.horizon - start,
+            components=components,
+            bays=inst.bays[start:].copy(),
+            labor=inst.labor[start:].copy(),
+            initial_stock=np.maximum(stock, 0).astype(inst.initial_stock.dtype),
+            deliveries=inst.deliveries[:, start:].copy(),
+        )
+        return replace(self, base=base, initial_fh=tuple(float(h) for h in fh_since_task))
 
 
 def from_pmo(
