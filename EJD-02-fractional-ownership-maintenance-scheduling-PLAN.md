@@ -49,12 +49,12 @@ fractional-ownership-maintenance-scheduling/
 ```
 
 ## Execution Plan
-- [ ] **Phase 1 — Utilization model**: build a stochastic model of aircraft utilization representative of fractional-ownership patterns, validate its statistical properties (mean, variance, plausible extremes).
-- [ ] **Phase 2 — Deterministic baseline**: adapt the existing GA scheduler to run under a single average-utilization assumption, establish baseline performance.
-- [ ] **Phase 3 — Robust scenario-based scheduling**: extend the GA fitness function to evaluate across multiple Monte Carlo utilization scenarios, implement worst-case and expected-cost objective variants.
-- [ ] **Phase 4 — Dynamic rescheduling**: implement rolling-horizon re-optimization as simulated "actual" utilization is revealed over time.
-- [ ] **Phase 5 — Trade-off analysis**: run out-of-sample evaluation comparing deterministic vs. robust schedules across many simulated utilization futures.
-- [ ] **Phase 6 — Documentation and publishing**: written comparison of approaches, visualizations of schedule robustness and cost trade-offs.
+- [x] **Phase 1 — Utilization model**: build a stochastic model of aircraft utilization representative of fractional-ownership patterns, validate its statistical properties (mean, variance, plausible extremes).
+- [x] **Phase 2 — Deterministic baseline**: adapt the existing GA scheduler to run under a single average-utilization assumption, establish baseline performance.
+- [x] **Phase 3 — Robust scenario-based scheduling**: extend the GA fitness function to evaluate across multiple Monte Carlo utilization scenarios, implement worst-case and expected-cost objective variants.
+- [x] **Phase 4 — Dynamic rescheduling**: implement rolling-horizon re-optimization as simulated "actual" utilization is revealed over time.
+- [x] **Phase 5 — Trade-off analysis**: run out-of-sample evaluation comparing deterministic vs. robust schedules across many simulated utilization futures.
+- [x] **Phase 6 — Documentation and publishing**: written comparison of approaches, visualizations of schedule robustness and cost trade-offs.
 
 ## Validation Strategy
 - Deterministic baseline validated for consistency against the original Preventive Maintenance Optimization project's results under equivalent assumptions.
