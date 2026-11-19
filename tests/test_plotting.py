@@ -21,3 +21,24 @@ def test_cost_distributions_and_lines() -> None:
     assert len(fig.axes[0].lines) == 2
     fig = plotting.lines([1, 10], {"a": [1, 2], "b": [2, 3]}, xlabel="x", ylabel="y", logx=True)
     assert fig.axes[0].get_xscale() == "log"
+
+
+def test_bars_replans_and_gantt_figures() -> None:
+    fig = plotting.bars(["x", "y"], [1.0, 2.0], [0.1, 0.2], ylabel="v")
+    assert len(fig.axes[0].patches) == 2
+    fig = plotting.replans(
+        plans=[[3, 20], [3, 18]],
+        epochs=[0, 4],
+        executed=[3, 18],
+        forced=[10],
+        hours=np.full(26, 15.0),
+        mean_rate=15.0,
+    )
+    assert len(fig.axes) == 2
+    planned = [[3, 20], [10]]
+    forced = {"slow": [[], []], "fast": [[15], [8, 30]]}
+    fig = plotting.gantt_scenarios(["aircraft 1", "aircraft 1"], planned, forced, 52)
+    assert len(fig.axes) == 2
+    assert [t.get_text() for t in fig.axes[0].get_yticklabels()] == ["aircraft 1"]
+    html = plotting.gantt_html(["a1 APU", "a1 brakes"], planned, forced)
+    assert "<html>" in html and "forced" in html
