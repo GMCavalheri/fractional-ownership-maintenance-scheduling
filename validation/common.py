@@ -74,8 +74,10 @@ IN_SAMPLE_SEED = 20261120  # scenarios a plan is optimised on
 HELD_OUT_SEED = 20261121  # scenarios a plan is judged on, never seen by any optimiser
 
 
-def scenarios(n: int, seed: int, replicate: int = 0) -> np.ndarray:
-    """``n`` utilization paths ``(n, 10, 52)`` from the default (capped) model.
+def scenarios(
+    n: int, seed: int, replicate: int = 0, n_aircraft: int = 10, horizon: int = 52
+) -> np.ndarray:
+    """``n`` utilization paths ``(n, n_aircraft, horizon)`` from the default (capped) model.
 
     Replicates of the same seed are independent streams (``SeedSequence.spawn``), so phase 3
     can draw several independent in-sample sets and phase 5 a held-out set that no
@@ -84,7 +86,7 @@ def scenarios(n: int, seed: int, replicate: int = 0) -> np.ndarray:
     from fracsched.utilization_model import default_model
 
     stream = np.random.SeedSequence(seed).spawn(replicate + 1)[replicate]
-    u, _ = default_model().sample(np.random.default_rng(stream), n, 10, 52)
+    u, _ = default_model().sample(np.random.default_rng(stream), n, n_aircraft, horizon)
     return u
 
 
