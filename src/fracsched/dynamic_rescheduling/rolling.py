@@ -155,6 +155,7 @@ class RollingOutcome:
     executed: Schedule  # the planned tasks actually carried out
     evaluation: ScenarioEvaluation  # scored on the actual future (one scenario)
     replans: int
+    plans: tuple[Schedule, ...] = ()  # the full-year plan in force after each epoch
 
 
 def simulate(
@@ -170,6 +171,7 @@ def simulate(
     plan = [tuple(e) for e in initial_plan]
     executed: list[list[int]] = [[] for _ in range(C)]
     replans = 0
+    history: list[Schedule] = []
     for k in range(0, T, config.period):
         if k > 0:
             states = [component_state(problem, c, executed[c], actual.u, k) for c in range(C)]
@@ -189,8 +191,9 @@ def simulate(
                 for old, events in zip(plan, new, strict=True)
             ]
             replans += 1
+        history.append(tuple(plan))
         for c in range(C):
             executed[c].extend(t for t in plan[c] if k <= t < k + config.period)
     schedule = tuple(tuple(e) for e in executed)
     tables = segment_tables(problem, actual.u[None])
-    return RollingOutcome(schedule, evaluate(problem, tables, schedule), replans)
+    return RollingOutcome(schedule, evaluate(problem, tables, schedule), replans, tuple(history))

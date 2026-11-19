@@ -82,3 +82,62 @@ def lines(
     ax.set(xlabel=xlabel, ylabel=ylabel)
     ax.legend(fontsize=8)
     return fig
+
+
+def bars(
+    labels: Sequence[str], values: Sequence[float], errors: Sequence[float], *, ylabel: str
+) -> Figure:
+    """One bar per label with a ±error whisker."""
+    fig = Figure(figsize=(7, 3.8), layout="constrained")
+    ax = fig.add_subplot()
+    x = np.arange(len(labels))
+    ax.bar(
+        x,
+        values,
+        yerr=errors,
+        color=[COLORS[i % len(COLORS)] for i in range(len(labels))],
+        capsize=4,
+        alpha=0.85,
+    )
+    ax.set_xticks(x, labels, fontsize=8)
+    ax.set_ylabel(ylabel)
+    lo = min(v - e for v, e in zip(values, errors, strict=True))
+    hi = max(v + e for v, e in zip(values, errors, strict=True))
+    ax.set_ylim(lo - 0.15 * (hi - lo), hi + 0.15 * (hi - lo))
+    return fig
+
+
+def replans(
+    plans: Sequence[Sequence[int]],
+    epochs: Sequence[int],
+    executed: Sequence[int],
+    forced: Sequence[int],
+    hours: FloatArray,
+    mean_rate: float,
+) -> Figure:
+    """How one component's plan moves as the year unfolds.
+
+    Top: the aircraft's cumulative hours. Bottom: one row per re-plan epoch with the task weeks
+    planned at that epoch (dots); executed tasks (squares) and forced tasks (crosses) below.
+    """
+    fig = Figure(figsize=(8, 5), layout="constrained")
+    top, bottom = fig.subplots(2, 1, sharex=True, height_ratios=(1, 2))
+    weeks = np.arange(hours.size + 1)
+    top.plot(weeks, np.concatenate([[0.0], np.cumsum(hours)]), color=COLORS[0])
+    top.plot(weeks, weeks * mean_rate, "k--", lw=1, label="at the design rate")
+    top.legend(fontsize=7)
+    top.set_ylabel("cumulative FH")
+    for row, (epoch, plan) in enumerate(zip(epochs, plans, strict=True)):
+        future = [t for t in plan if t >= epoch]
+        bottom.scatter(future, [row] * len(future), color=COLORS[1], s=18)
+        bottom.plot([epoch, epoch], [row - 0.4, row + 0.4], color="k", lw=0.8)
+    base = len(epochs) + 0.5
+    bottom.scatter(executed, [base] * len(executed), marker="s", color=COLORS[2], label="executed")
+    bottom.scatter(forced, [base + 1] * len(forced), marker="x", color="k", label="forced")
+    bottom.set_yticks(
+        [*range(len(epochs)), base, base + 1],
+        [*(f"plan at week {e}" for e in epochs), "executed", "forced"],
+        fontsize=7,
+    )
+    bottom.set_xlabel("week")
+    return fig
