@@ -1,6 +1,6 @@
 [project]
 name = "fracsched"
-version = "0.1.0"
+version = "1.0.0"
 description = "Maintenance scheduling for business jets whose future flight hours are uncertain: a genetic algorithm evaluated across Monte Carlo utilization scenarios, an exact sample-average model, rolling-horizon re-planning, and an out-of-sample comparison with planning for the average."
 readme = "README.md"
 license = { text = "MIT" }
