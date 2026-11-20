@@ -1,14 +1,23 @@
 """Phase 2: plan for the average with AVR-04's methods, then judge the plans under uncertainty.
 
-    uv run python validation/deterministic.py
+    uv run python validation/deterministic.py          # byte-reproducible results
+    uv run python validation/deterministic.py --main   # also rerun AVR-04's GA (machine-dependent)
 
-Writes ``validation/results/deterministic.md``, the plans in ``validation/results/plans/`` and
-``docs/figures/deterministic_costs.png``. About four minutes (three AVR-04 GA runs in parallel).
+Writes ``validation/results/deterministic.md``, the fixed-interval plans in
+``validation/results/plans/`` and ``docs/figures/deterministic_costs.png``.
+
+The plan for the average is AVR-04's GA plan, kept as data in ``plans/average_ga.json``. AVR-04's
+GA compares unrounded floating-point costs, so on a different CPU a seed can take a different
+search path (it happened on CI for seed 1). Rerunning it is therefore the ``--main`` step,
+which writes ``deterministic_ga.md`` (not byte-compared) and re-selects the plan; the default
+run only evaluates the committed plan, whose cost at ū is checked against AVR-04's published
+value exactly.
 """
 
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import replace
 
 import numpy as np
@@ -17,7 +26,7 @@ from pmo.ga import GAConfig, run_ga_many
 
 from fracsched import plotting
 from fracsched.deterministic_baseline import constant_scenario, fixed_interval_plans
-from fracsched.problem import main_problem
+from fracsched.problem import FleetProblem, main_problem
 from fracsched.risk_measures import summarize
 from fracsched.scenarios import evaluate, evaluate_in_chunks, segment_index, segment_tables
 
@@ -25,6 +34,7 @@ from common import (
     FIGURES,
     HELD_OUT_SEED,
     bounded,
+    load_plan,
     save_plan,
     scenarios,
     table,
@@ -43,16 +53,53 @@ AVR04_PUBLISHED = {
 }
 
 
+AVERAGE_SOURCE = "GA seed 2 (the plan for the average)"
+AVR04_PUBLISHED[AVERAGE_SOURCE] = AVR04_PUBLISHED["GA seed 2"]
+
+
+def rerun_ga(problem: FleetProblem) -> None:
+    """Rerun AVR-04's GA (machine-dependent) and keep the seed cheapest at ū as the plan."""
+    inst = problem.at_mean()
+    workers = min(len(GA_SEEDS), os.cpu_count() or 1)
+    runs = run_ga_many([(inst, replace(GAConfig(), seed=s)) for s in GA_SEEDS], workers)
+    mean_tables = segment_tables(problem, constant_scenario(problem))
+    rows = []
+    for s, run in zip(GA_SEEDS, runs, strict=True):
+        ours = float(evaluate(problem, mean_tables, run.schedule).total[0])
+        theirs = AVR04_PUBLISHED[f"GA seed {s}"]
+        rows.append([s, f"{theirs:,.2f}", f"{ours:,.2f}", f"{abs(ours / theirs - 1):.1e}"])
+    best = min(range(len(runs)), key=lambda i: pmo_evaluate(inst, runs[i].schedule).total_cost)
+    save_plan(
+        "average_ga",
+        runs[best].schedule,
+        source=f"pmo GA seed {GA_SEEDS[best]} on the mean instance",
+    )
+    write_result(
+        "deterministic_ga",
+        "Phase 2: AVR-04's GA rerun (machine-dependent)",
+        [
+            (
+                "AVR-04's GA, rerun through `average_plan` (pmo v1.0.0, defaults)",
+                "AVR-04's GA compares unrounded floating-point costs, so a seed reproduces its "
+                "published plan on the machine that produced it but can take another path on a "
+                "different CPU. This file is therefore not byte-compared by CI. The plan for the "
+                f"average is the seed cheapest at ū (seed {GA_SEEDS[best]}), saved as data.\n\n"
+                + table(["seed", "AVR-04 published ($)", "rerun at ū ($)", "rel. diff"], rows),
+            )
+        ],
+        script="deterministic",
+    )
+
+
 def main() -> None:
     problem = main_problem()
     inst = problem.at_mean()
 
     # 1. Reproduce AVR-04 on its own terms (the PLAN's consistency check)
     plans = dict(fixed_interval_plans(problem))
-    workers = min(len(GA_SEEDS), os.cpu_count() or 1)
-    runs = run_ga_many([(inst, replace(GAConfig(), seed=s)) for s in GA_SEEDS], workers)
-    for s, run in zip(GA_SEEDS, runs, strict=True):
-        plans[f"GA seed {s}"] = run.schedule
+    if "--main" in sys.argv:
+        rerun_ga(problem)
+    plans[AVERAGE_SOURCE] = load_plan("average_ga")
     mean_tables = segment_tables(problem, constant_scenario(problem))
     rows = []
     for name, schedule in plans.items():
@@ -63,10 +110,7 @@ def main() -> None:
         )
     reproduce = table(["plan", "AVR-04 published ($)", "this project at ū ($)", "rel. diff"], rows)
 
-    # The planner's choice: the GA run with the lowest cost at mean utilization.
-    best_seed = min(GA_SEEDS, key=lambda s: pmo_evaluate(inst, plans[f"GA seed {s}"]).total_cost)
-    average = plans[f"GA seed {best_seed}"]
-    save_plan("average_ga", average, source=f"pmo GA seed {best_seed} on the mean instance")
+    average = plans[AVERAGE_SOURCE]
     judged = {
         "Fixed interval (cost-optimal)": plans["Fixed interval (cost-optimal)"],
         "Fixed interval (80% of max)": plans["Fixed interval (80% of max)"],
@@ -172,13 +216,15 @@ def main() -> None:
                 "Reproducing AVR-04 at the design utilization",
                 "At constant utilization ū = 800/52 FH a week the FH problem is AVR-04's "
                 "main instance. Its plans, re-scored by this project's scenario evaluator, "
-                "must give AVR-04's published costs; the GA rows rerun AVR-04's GA "
-                f"(pmo v1.0.0, defaults, seeds {GA_SEEDS}) through `average_plan`.\n\n" + reproduce,
+                "must give AVR-04's published costs. The plan for the average is AVR-04's GA "
+                "plan for seed 2 (pmo v1.0.0, defaults), kept as data in "
+                "`plans/average_ga.json`; rerunning the GA is machine-dependent and reported in "
+                "`deterministic_ga.md`.\n\n" + reproduce,
             ),
             (
                 "The average plans under uncertain utilization",
                 f"{N_HELD_OUT} held-out utilization scenarios (seed {HELD_OUT_SEED}). The "
-                f"planner's GA plan is seed {best_seed}, the lowest cost at ū. Costs in $M "
+                "planner's GA plan is AVR-04's seed 2, the lowest cost at ū. Costs in $M "
                 "over the 52-week horizon; ± is one Monte Carlo standard error.\n\n" + judged_table,
             ),
             ("Where the extra cost comes from (means over scenarios)", breakdown_table),

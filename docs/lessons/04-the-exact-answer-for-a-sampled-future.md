@@ -92,12 +92,13 @@ scenarios. The CVaR model needs 30 scenarios to do it in minutes.
 ## 4. How far is the GA from optimal?
 
 AVR-04's small instances (3 aircraft × 3 types × 26 weeks, five seeds) on the FH clock. CP-SAT
-on one thread proves every optimum. Gaps are in sample, relative to the optimum
+on one thread proves every optimum; the plan for the average is the exact optimum at $\bar u$.
+Gaps are in sample, relative to the optimum
 ([results](../../validation/results/exact.md)):
 
 | instance | plan for the average | GA best of 3 | GA median | GA worst |
 |---|---:|---:|---:|---:|
-| expected cost, 0–4 | +3.5 to +9.7 % | 0.00 to 0.24 % | 0.00 to 1.05 % | 0.00 to 2.94 % |
+| expected cost, 0–4 | +3.5 to +9.7 % | 0.00 to 0.24 % | 0.00 to 1.60 % | 0.00 to 2.95 % |
 | CVaR 90 %, 0–4 | +27 to +43 % | 0.00 to 0.87 % | 0.05 to 3.50 % | 0.55 to 3.50 % |
 
 * **The GA is near-optimal when it is run more than once.** Its best of three seeds is within
@@ -107,7 +108,7 @@ on one thread proves every optimum. Gaps are in sample, relative to the optimum
   above the optimum, because it plans every interval up to the limit at the mean and the
   fast tail punishes exactly that.
 * **Out of sample the gain holds.** On 2000 held-out futures the exact expected-cost plan
-  beats the plan for the average by 3.6 to 8.1 % on these instances.
+  beats the plan for the average by 3.6 to 6.8 % on these instances.
 
 ### The main instance
 

@@ -81,10 +81,18 @@ a constant scenario is AVR-04's evaluator. The results confirm it:
 | Fixed interval (cost-optimal) | \$4 772 492.91 | \$4 772 492.91 | < 1e-12 |
 | GA, seed 2 (100 × 500 generations) | \$3 581 598.26 | \$3 581 598.26 | < 1e-12 |
 
-Every GA seed reproduces AVR-04's published result, because `average_plan` *is* AVR-04's GA,
-imported from `pmo` v1.0.0, run on the same instance with the same seed. This is the PLAN's
-consistency check. From here on, any difference from AVR-04 is caused by uncertainty, and by
-nothing else.
+The GA row is AVR-04's own plan (seed 2 of its published runs), kept in the repository as
+data, and our evaluator gives its published cost exactly. This is the PLAN's consistency
+check. From here on, any difference from AVR-04 is caused by uncertainty, and by nothing else.
+
+> **Why the plan is data, not a rerun.** `average_plan` *is* AVR-04's GA, imported from `pmo`
+> v1.0.0. On the machine that produced AVR-04's results, rerunning it reproduces every
+> published seed. On GitHub's runners seed 1 took a different path and ended 0.4 % higher.
+> AVR-04's GA compares unrounded floating-point costs, and a last-bit difference between two
+> CPUs (in a vectorised power, say) can flip one tournament, after which the runs diverge.
+> This project's own GA rounds its fitness to cents for exactly this reason, and its results
+> reproduce everywhere. The rerun is kept as a machine-dependent check
+> ([`deterministic_ga.md`](../../validation/results/deterministic_ga.md)).
 
 ## 3. When the future disagrees: recourse
 

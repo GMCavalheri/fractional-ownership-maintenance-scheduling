@@ -43,10 +43,12 @@ jobs:
       - name: Every validation script reruns
         run: uv run python validation/run_all.py
       - name: Every committed result reproduces byte for byte
-        # exact_main.md (time-limited, multi-threaded CP-SAT on the main instance) is the
-        # documented exception; run_all.py does not regenerate it without --main.
+        # exact_main.md (time-limited, multi-threaded CP-SAT on the main instance) and
+        # deterministic_ga.md (AVR-04's GA rerun, unrounded float fitness) are machine-dependent;
+        # run_all.py regenerates them only with --main.
         run: >-
           git diff --exit-code -- validation/results
           ':(exclude)validation/results/exact_main.md'
+          ':(exclude)validation/results/deterministic_ga.md'
       - name: Every notebook executes
         run: uv run python notebooks/build_notebooks.py --check

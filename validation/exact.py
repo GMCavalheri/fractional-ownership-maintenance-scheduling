@@ -17,9 +17,7 @@ import sys
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import replace
 
-from pmo.ga import GAConfig
-
-from fracsched.deterministic_baseline import average_plan
+from fracsched.deterministic_baseline import constant_scenario
 from fracsched.exact_saa import solve_saa
 from fracsched.problem import main_problem, small_problem
 from fracsched.robust_scenario_scheduling import RobustConfig, plan_objective, run_robust_ga
@@ -47,7 +45,11 @@ def small_case(i: int) -> dict[str, object]:
     problem = small_problem(i)
     shape = {"n_aircraft": 3, "horizon": 26}
     out: dict[str, object] = {"instance": i}
-    average = average_plan(problem, GAConfig(seed=0)).schedule
+    # The plan for the average: the exact optimum at ū (one thread, so it reproduces anywhere;
+    # AVR-04's GA compares unrounded floats and can take another path on another CPU).
+    average = solve_saa(
+        problem, cost_table(problem, constant_scenario(problem)), time_limit=TIME_SMALL
+    ).schedule
     for objective, n in (("mean", N_MEAN), ("cvar", N_CVAR)):
         u = scenarios(n, IN_SAMPLE_SEED, replicate=1 + i, **shape)
         table_in = cost_table(problem, u)
@@ -137,9 +139,9 @@ def small() -> None:
                 "AVR-04's small instances (3 aircraft x 3 types x 26 weeks, seeds 0-4) on the "
                 "FH clock. CP-SAT (one thread, seed 0) solves the sample-average problem; "
                 "'proven' means it proved optimality (arc costs rounded to 10 cents, so the "
-                "optimum is exact to within a few dollars). The GA is phase 3's (100 x 400, "
-                "warm-started with the plan for the average). Gaps are relative to the "
-                "optimum, in sample.",
+                "optimum is exact to within a few dollars). The plan for the average is the "
+                "exact optimum at ū. The GA is phase 3's (100 x 400, warm-started with the plan "
+                "for the average). Gaps are relative to the optimum, in sample.",
             ),
             *sections,
         ],

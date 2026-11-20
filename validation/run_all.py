@@ -4,9 +4,10 @@
 
 Every result is exact, proven optimal, or computed from seeded generators with fitness rounded
 to cents, and rounding-level quantities are reported as bounds, so a rerun reproduces the
-tables in ``validation/results/`` byte for byte; CI checks that with ``git diff``. The one
-exception is ``exact_main.md``: a time-limited, multi-threaded CP-SAT search on the main
-instance, whose best plan and bound depend on the machine (``exact.py --main``). Figures go to
+tables in ``validation/results/`` byte for byte; CI checks that with ``git diff``. Two files are
+machine-dependent and only regenerated with ``--main``: ``exact_main.md`` (a time-limited,
+multi-threaded CP-SAT search on the main instance) and ``deterministic_ga.md`` (AVR-04's GA
+rerun, which compares unrounded floats). Figures go to
 ``docs/figures/``; their pixels can differ between platforms' font setups, so CI does not
 compare them.
 """
@@ -21,7 +22,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SCRIPTS = [
     (["utilization.py"], "Phase 1: utilization model"),
-    (["deterministic.py"], "Phase 2: planning for the average (reproduces AVR-04)"),
+    (
+        ["deterministic.py", *(["--main"] if "--main" in sys.argv else [])],
+        "Phase 2: planning for the average (reproduces AVR-04)",
+    ),
     (["robust.py"], "Phase 3: scenario-based robust scheduling"),
     (["exact.py", *(["--main"] if "--main" in sys.argv else [])], "Extra: exact SAA oracle"),
     (["rolling.py"], "Phase 4: rolling-horizon re-planning"),

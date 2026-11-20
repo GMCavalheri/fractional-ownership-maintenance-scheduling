@@ -27,8 +27,10 @@ as phases land).
 - `uv run python validation/<script>.py` — regenerate one phase's tables
   (`validation/results/`) and figures (`docs/figures/`); `validation/run_all.py` runs them all
   in order (about an hour on 12 cores; later scripts read the plans earlier ones save in
-  `validation/results/plans/`). `exact.py --main` also writes `exact_main.md`, the one
-  time-limited, machine-dependent result, excluded from the byte comparison
+  `validation/results/plans/`). With `--main` it also writes the two machine-dependent files,
+  excluded from the byte comparison: `exact_main.md` (time-limited CP-SAT) and
+  `deterministic_ga.md` (AVR-04's GA rerun: its fitness is an unrounded float, so a seed can
+  take another path on another CPU; the plan for the average is kept as data instead)
 - `uv run python notebooks/build_notebooks.py` — regenerate and execute the notebooks
 - CI: `ci.yml` (lint, tests 3.11–3.13, security) on every push; `reproduce.yml` (run_all +
   `git diff --exit-code validation/results` + notebooks) when code, results or dependencies
