@@ -1,0 +1,52 @@
+name: Reproduce
+
+# Reruns every validation script and fails if any committed result changes. The full run takes
+# over an hour on a 4-core runner (GA searches, exact CP-SAT solves, 10 000-future
+# evaluations), so it runs when code, results or dependencies change, weekly, and on demand,
+# rather than on every documentation push.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "validation/**"
+      - "notebooks/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/reproduce.yml"
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: reproduce-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  UV_FROZEN: "1"
+  MPLBACKEND: Agg
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - run: uv sync
+      - name: Every validation script reruns
+        run: uv run python validation/run_all.py
+      - name: Every committed result reproduces byte for byte
+        # exact_main.md (time-limited, multi-threaded CP-SAT on the main instance) is the
+        # documented exception; run_all.py does not regenerate it without --main.
+        run: >-
+          git diff --exit-code -- validation/results
+          ':(exclude)validation/results/exact_main.md'
+      - name: Every notebook executes
+        run: uv run python notebooks/build_notebooks.py --check

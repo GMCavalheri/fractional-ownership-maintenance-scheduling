@@ -25,7 +25,14 @@ as phases land).
   the ```python blocks inside Markdown, so run it after editing docs too
 - `uv run mypy` — strict type check of `src/`
 - `uv run python validation/<script>.py` — regenerate one phase's tables
-  (`validation/results/`) and figures (`docs/figures/`)
+  (`validation/results/`) and figures (`docs/figures/`); `validation/run_all.py` runs them all
+  in order (about an hour on 12 cores; later scripts read the plans earlier ones save in
+  `validation/results/plans/`). `exact.py --main` also writes `exact_main.md`, the one
+  time-limited, machine-dependent result, excluded from the byte comparison
+- `uv run python notebooks/build_notebooks.py` — regenerate and execute the notebooks
+- CI: `ci.yml` (lint, tests 3.11–3.13, security) on every push; `reproduce.yml` (run_all +
+  `git diff --exit-code validation/results` + notebooks) when code, results or dependencies
+  change, weekly, and on demand
 
 ## Layout
 - `src/fracsched/` — single package; subpackages mirror the plan.
